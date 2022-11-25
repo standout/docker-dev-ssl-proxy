@@ -1,0 +1,22 @@
+name: Release docker image
+on:
+  release:
+    types: [published]
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Login to docker repository
+        run: echo ${{ secrets.GH_PACKAGES_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+      - name: Build docker image
+        run: |
+          docker pull ghcr.io/standout/docker-dev-ssl-proxy/docker-dev-ssl-proxy:latest
+          docker build \
+          -t ghcr.io/standout/docker-dev-ssl-proxy/docker-dev-ssl-proxy:${{ github.sha }} \
+          -t ghcr.io/standout/docker-dev-ssl-proxy/docker-dev-ssl-proxy:latest
+          .
+      - name: Release docker image
+        run: |
+          docker push ghcr.io/standout/docker-dev-ssl-proxy/docker-dev-ssl-proxy:${{ github.sha }}
+          docker push ghcr.io/standout/docker-dev-ssl-proxy/docker-dev-ssl-proxy:latest
